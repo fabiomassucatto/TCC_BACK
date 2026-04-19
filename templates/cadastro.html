@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Cadastro</title>
+</head>
+<body>
+    <main class="container">
+        <form method="post" action="/cadastro">
+            <h1>Cadastro</h1>
+
+            <div class="input-box">
+                <input name="nome" placeholder="Nome completo" type="text" required>
+                <i class="bx bxs-user"></i>
+            </div>
+
+            <div class="input-box">
+                <input name="email" placeholder="Email" type="email" required>
+                <i class="bx bxs-envelope"></i>
+            </div>
+
+            <div class="input-box">
+                <input name="senha" placeholder="Senha" type="password" required>
+                <i class="bx bxs-lock-alt"></i>
+            </div>
+
+            <div class="input-box">
+                <input name="confirmar_senha" placeholder="Confirmar senha" type="password" required>
+                <i class="bx bxs-lock-alt"></i>
+            </div>
+
+            <div class="input-box">
+                <input name="ponto" placeholder="Adicione Seu Ponto de Coleta" type="text" required>
+                <i class="bx bxs-map"></i>
+            </div>
+
+            <button type="submit" class="login">Cadastrar</button>
+
+            <div class="Resgitrar">
+                <p>Já tem uma conta? <a href="/">Login</a></p>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

@@ -64,23 +64,23 @@ body{
     font-size:20px;
 }
 
-.RelembrarSenha{
+.lembrarSenha{
     display: flex;
     justify-content: space-between;
     margin: -15px 0 15px;
 }
 
-.RelembrarSenha label input{
+.lembrarSenha label input{
     accent-color: #fff;
     margin-right: 5px;
 }
 
-.RelembrarSenha a {
+.lembrarSenha a {
     text-decoration: none;
     color: #ffffff;
 }
 
-.RelembrarSenha a:hover{
+.lembrarSenha a:hover{
     text-decoration: underline;
 }
 
