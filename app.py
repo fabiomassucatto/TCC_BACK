@@ -40,7 +40,7 @@ def login():
 
         if user:
             session["user"] = user[1]
-            return redirect("/dashboard")
+            return redirect("/QR_CODE.html")
 
     return render_template("login.html")
 

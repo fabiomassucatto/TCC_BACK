@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Simples</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: #f4f6f9;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      height: 100vh;
+      background: #1e293b;
+      color: white;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .sidebar a:hover {
+      background: #334155;
+    }
+
+    /* Main */
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .header {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    .card p {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Tabela */
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #1e293b;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Meu Dashboard</h2>
+    <a href="#">Home</a>
+    <a href="#">Relatórios</a>
+    <a href="#">Usuários</a>
+    <a href="#">Configurações</a>
+  </div>
+
+  <div class="main">
+    <div class="header">Visão Geral</div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Usuários</h3>
+        <p id="usuarios">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Vendas</h3>
+        <p id="vendas">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Pedidos</h3>
+        <p id="pedidos">0</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>João</td>
+          <td>joao@email.com</td>
+          <td>Ativo</td>
+        </tr>
+        <tr>
+          <td>Maria</td>
+          <td>maria@email.com</td>
+          <td>Inativo</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Simulação de dados
+    document.getElementById("usuarios").innerText = 120;
+    document.getElementById("vendas").innerText = "R$ 8.500";
+    document.getElementById("pedidos").innerText = 35;
+  </script>
+
+</body>
+</html>
