@@ -1,3 +1,7 @@
+import qrcode
+import io
+import base64
+from flask import send_file
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
 
@@ -21,6 +25,16 @@ def criar_tabela():
         ponto varchar(100)
     )
     """)
+
+    conn.execute("""
+                 CREATE TABLE IF NOT EXISTS presencas (
+                 id integer PRIMARY KEY AUTOINCREMENT,
+                    usuario_id integer,
+                    data_hora datetime,
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)    
+                 
+                 )""")
+
     conn.close()
 
 criar_tabela()
@@ -40,7 +54,7 @@ def login():
 
         if user:
             session["user"] = user[1]
-            return redirect("/QR_CODE.html")
+            return redirect("/dashboard")
 
     return render_template("login.html")
 
@@ -77,9 +91,34 @@ def dashboard():
 
     return render_template("dashboard.html", dados=dados)
 
+from datetime import datetime
 
-@app.route("/QR_CODE")
-def qr_code():
-    return render_template("QR_CODE.html")
+@app.route("/registrar", methods=["POST"])
+def registrar():
+    if "user" not in session:
+        return {"status": "erro", "msg": "Logue primeiro"}, 401
+
+    ponto_id = request.json["qr"] # ID que veio do QR Code na parede
+    nome_usuario = session["user"] # Nome do cara que está logado
+
+    # Aqui você faria um SELECT para pegar o ID do usuario pelo nome 
+    # ou salvaria o ID direto na sessão no momento do login.
+
+    # ... salva no banco ...
+
+    return {"status": "ok"}
+
+
+@app.route("/gerar_qr/<int:id_ponto>")
+def gerar_qr(id_ponto):
+    # Aqui o QR Code vai conter apenas o ID (ex: "1")
+    # que é o que sua rota /registrar espera receber no JSON
+    img = qrcode.make(str(id_ponto))
+    
+    buf = io.BytesIO()
+    img.save(buf)
+    buf.seek(0)
+    
+    return send_file(buf, mimetype='image/png')
 
 app.run(debug=True)
