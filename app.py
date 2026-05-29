@@ -19,10 +19,11 @@ def criar_tabela():
     conn.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome varchar(100),
+        nome varchar(100) not null,
         email varchar(100) UNIQUE,
-        senha varchar(100),
-        ponto varchar(100)
+        senha varchar(100) not null,
+        ponto varchar(100) not null,
+        tipo varchar(20) not null
     )
     """)
 
@@ -30,9 +31,10 @@ def criar_tabela():
                  CREATE TABLE IF NOT EXISTS presencas (
                  id integer PRIMARY KEY AUTOINCREMENT,
                     usuario_id integer,
+                    motorista_id integer,
                     data_hora datetime,
-                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)    
-                 
+                    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+                    FOREIGN KEY (motorista_id) REFERENCES usuarios(id)
                  )""")
 
     conn.close()
@@ -53,7 +55,9 @@ def login():
         ).fetchone()
 
         if user:
-            session["user"] = user[1]
+            session["user"] = user[1] # Salva o nome
+            session["user_id"] = user[0]  # Salva o ID
+            session["user_tipo"] = user[5] # Salva o tipo
             return redirect("/dashboard")
 
     return render_template("login.html")
@@ -66,11 +70,12 @@ def cadastro():
         email = request.form["email"]
         senha = request.form["senha"]
         ponto = request.form["ponto"]
+        tipo = request.form["tipo"]
 
         conn = get_db()
         conn.execute(
-            "INSERT INTO usuarios (nome, email, senha, ponto) VALUES (?, ?, ?, ?)",
-            (nome, email, senha, ponto)
+            "INSERT INTO usuarios (nome, email, senha, ponto, tipo) VALUES (?, ?, ?, ?, ?)",
+            (nome, email, senha, ponto, tipo)
         )
         conn.commit()
         conn.close()
@@ -95,30 +100,47 @@ from datetime import datetime
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
-    if "user" not in session:
-        return {"status": "erro", "msg": "Logue primeiro"}, 401
 
-    ponto_id = request.json["qr"] # ID que veio do QR Code na parede
-    nome_usuario = session["user"] # Nome do cara que está logado
+    if "user_id" not in session:
+        return {
+            "status": "erro",
+            "msg": "Logue primeiro"
+        }, 401
 
-    # Aqui você faria um SELECT para pegar o ID do usuario pelo nome 
-    # ou salvaria o ID direto na sessão no momento do login.
+    usuario_id = session["user_id"]
 
-    # ... salva no banco ...
+    motorista_id = request.json["qr"]
 
-    return {"status": "ok"}
+    data_hora = datetime.now()
+
+    conn = get_db()
+
+    conn.execute("""
+        INSERT INTO presencas
+        (usuario_id, motorista_id, data_hora)
+        VALUES (?, ?, ?)
+    """, (usuario_id, motorista_id, data_hora))
+
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "ok",
+        "msg": "Presença registrada"
+    }
 
 
-@app.route("/gerar_qr/<int:id_ponto>")
-def gerar_qr(id_ponto):
-    # Aqui o QR Code vai conter apenas o ID (ex: "1")
-    # que é o que sua rota /registrar espera receber no JSON
-    img = qrcode.make(str(id_ponto))
-    
-    buf = io.BytesIO()
-    img.save(buf)
-    buf.seek(0)
-    
-    return send_file(buf, mimetype='image/png')
+
+@app.route("/gerar_qr/<int:motorista_id>")
+def gerar_qr(motorista_id):
+    # Gerar QR Code com o ID do motorista
+    qr = qrcode.make(str(motorista_id))
+    img_io = io.BytesIO()
+    qr.save(img_io, 'PNG')
+    img_io.seek(0)
+
+    # Retornar a imagem do QR Code
+    return send_file(img_io, mimetype='image/png')
+
 
 app.run(debug=True)
