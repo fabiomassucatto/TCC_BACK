@@ -5,44 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Login Motorista</title>
+    <title>Painel do Motorista</title>
 </head>
 <body>
-
     <main class="container">
-        <form method="post" action="/login_motorista">
+        <h1>Olá, {{ nome }}</h1>
 
-            <h1>Motorista</h1>
+        <p style="text-align:center; margin: 16px 0 8px; color: rgba(255,255,255,.75); font-size:14px;">
+            Seu QR Code para registro de presença:
+        </p>
 
-            <div class="input-box">
-                <input name="email" type="email" placeholder="E-mail do motorista" required>
-                <i class="bx bxs-envelope"></i>
-            </div>
+        <div style="text-align:center; margin: 16px 0;">
+            <img src="{{ url_for('gerar_qr', motorista_id=motorista_id) }}"
+                 alt="QR Code"
+                 style="border-radius:8px; width:200px; height:200px;">
+        </div>
 
-            <div class="input-box">
-                <input name="senha" type="password" placeholder="Senha" required>
-                <i class="bx bxs-lock-alt"></i>
-            </div>
-
-            <div class="lembrarSenha">
-                <label>
-                    <input type="checkbox">
-                    Lembrar senha
-                </label>
-
-                <a href="#">Esqueci minha senha</a>
-            </div>
-
-            <button type="submit" class="login">
-                Entrar como Motorista
-            </button>
-
-            <div class="voltar">
-                <a href="/perfil">← Voltar</a>
-            </div>
-
-        </form>
+        <a href="/logout" class="login" style="display:block; text-align:center; line-height:50px; text-decoration:none; margin-top:20px;">
+            Sair
+        </a>
     </main>
-
 </body>
 </html>

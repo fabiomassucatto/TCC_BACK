@@ -9,32 +9,80 @@
 </head>
 <body>
     <main class="container">
-        <form method="post" action="/">
-            <h1>Login</h1>
+
+        <!-- Seletor de perfil -->
+        <div class="toggle-wrapper">
+            <button type="button" class="toggle-btn active" id="btnUsuario" onclick="setRole('usuario')">
+                <i class='bx bxs-user'></i> Usuário
+            </button>
+            <button type="button" class="toggle-btn" id="btnMotorista" onclick="setRole('motorista')">
+                <i class='bx bxs-bus'></i> Motorista
+            </button>
+        </div>
+
+        <!-- Formulário único -->
+        <form method="post" action="/login" id="loginForm">
+            <input type="hidden" name="tipo" id="tipoInput" value="usuario">
+
+            <h1 id="tituloLogin">Login</h1>
+
             <div class="input-box">
-                 <input name="email" placeholder="Usuário" type="email" required>
-                <i class="bx bxs-user"></i>
+                <input name="email" placeholder="E-mail" type="email" required>
+                <i class="bx bxs-envelope"></i>
             </div>
+
             <div class="input-box">
                 <input name="senha" placeholder="Senha" type="password" required>
                 <i class="bx bxs-lock-alt"></i>
             </div>
+
             <div class="lembrarSenha">
                 <label>
-                <input type="checkbox">
-                Lembrar senha
+                    <input type="checkbox"> Lembrar senha
                 </label>
                 <a href="#">Esqueci senha</a>
             </div>
 
-            <button type="submit" class="login">Login</button>
+            <button type="submit" class="login" id="btnSubmit">Entrar</button>
 
-            <div class="Resgitrar">
+            <!-- Só aparece para usuário -->
+            <div class="Registrar" id="linkCadastro">
                 <p>Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
             </div>
-        </form>
 
+            <!-- Só aparece para motorista -->
+            <div class="aviso-motorista" id="avisoMotorista">
+                <p>Acesso restrito a motoristas credenciados.</p>
+            </div>
+
+        </form>
     </main>
-    
+
+    <script>
+        function setRole(role) {
+            const btnUsuario   = document.getElementById('btnUsuario');
+            const btnMotorista = document.getElementById('btnMotorista');
+            const tipoInput    = document.getElementById('tipoInput');
+            const titulo       = document.getElementById('tituloLogin');
+            const linkCadastro = document.getElementById('linkCadastro');
+            const aviso        = document.getElementById('avisoMotorista');
+
+            if (role === 'motorista') {
+                btnMotorista.classList.add('active');
+                btnUsuario.classList.remove('active');
+                tipoInput.value    = 'motorista';
+                titulo.textContent = 'Motorista';
+                linkCadastro.style.display = 'none';
+                aviso.style.display        = 'block';
+            } else {
+                btnUsuario.classList.add('active');
+                btnMotorista.classList.remove('active');
+                tipoInput.value    = 'usuario';
+                titulo.textContent = 'Login';
+                linkCadastro.style.display = 'block';
+                aviso.style.display        = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
