@@ -41,8 +41,17 @@ def criar_tabela():
 
 criar_tabela()
 
-# LOGIN Pagina inicial 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route("/")
+def index():
+    return render_template("usuario.html")
+
+@app.route("/perfil")
+def perfil():
+    return redirect("/")
+
+# LOGIN Pagina 
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
