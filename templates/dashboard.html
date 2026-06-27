@@ -1,166 +1,153 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard Simples</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      display: flex;
-      background: #f4f6f9;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      height: 100vh;
-      background: #1e293b;
-      color: white;
-      padding: 20px;
-    }
-
-    .sidebar h2 {
-      margin-bottom: 30px;
-    }
-
-    .sidebar a {
-      display: block;
-      color: white;
-      text-decoration: none;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    .sidebar a:hover {
-      background: #334155;
-    }
-
-    /* Main */
-    .main {
-      flex: 1;
-      padding: 20px;
-    }
-
-    .header {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-
-    /* Cards */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .card h3 {
-      margin-bottom: 10px;
-      color: #555;
-    }
-
-    .card p {
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    /* Tabela */
-    table {
-      width: 100%;
-      margin-top: 30px;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background: #1e293b;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background: #f2f2f2;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <title>Painel do Motorista</title>
 </head>
 <body>
+<div class="dash">
 
-  <div class="sidebar">
-    <h2>Meu Dashboard</h2>
-    <a href="#">Home</a>
-    <a href="#">Relatórios</a>
-    <a href="#">Usuários</a>
-    <a href="#">Configurações</a>
-  </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="avatar">{{ session['user'][:2].upper() }}</div>
+            <div class="brand-info">
+                <p>{{ session['user'] }}</p>
+                <span>Motorista</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active"><i class='bx bxs-dashboard'></i> Dashboard</div>
+            <div class="nav-item"><i class='bx bx-qr'></i> Meu QR Code</div>
+            <div class="nav-item"><i class='bx bxs-group'></i> Passageiros</div>
+            <div class="nav-item"><i class='bx bx-map'></i> Mapa</div>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/logout" class="logout-btn"><i class='bx bx-log-out'></i> Sair</a>
+        </div>
+    </aside>
 
-  <div class="main">
-    <div class="header">Visão Geral</div>
+    <!-- MAIN -->
+    <div class="main">
+        <div class="topbar">
+            <h1><i class='bx bxs-dashboard'></i> Painel do motorista</h1>
+            <div class="topbar-right">
+                <span class="status-live"><span class="dot"></span>Rota ativa</span>
+                <span class="badge">ROTR 404</span>
+            </div>
+        </div>
 
-    <div class="cards">
-      <div class="card">
-        <h3>Usuários</h3>
-        <p id="usuarios">0</p>
-      </div>
+        <div class="content">
 
-      <div class="card">
-        <h3>Vendas</h3>
-        <p id="vendas">0</p>
-      </div>
+            <!-- STAT CARDS -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class='bx bxs-group'></i></div>
+                    <div>
+                        <div class="stat-val">{{ presencas | length }}</div>
+                        <div class="stat-lbl">Passageiros hoje</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class='bx bx-qr-scan'></i></div>
+                    <div>
+                        <div class="stat-val">{{ presencas | length }}</div>
+                        <div class="stat-lbl">Leituras de QR</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class='bx bx-map-pin'></i></div>
+                    <div>
+                        <div class="stat-val">{{ pontos_unicos }}</div>
+                        <div class="stat-lbl">Pontos ativos</div>
+                    </div>
+                </div>
+            </div>
 
-      <div class="card">
-        <h3>Pedidos</h3>
-        <p id="pedidos">0</p>
-      </div>
+            <!-- MAP + SIDE -->
+            <div class="mid-grid">
+
+                <!-- MAP -->
+                <div class="map-card">
+                    <div class="card-header">
+                        <span><i class='bx bx-map'></i> Localização dos passageiros</span>
+                        <span class="muted">Atualizado agora</span>
+                    </div>
+                    <div class="map-body" id="map"></div>
+                </div>
+
+                <!-- SIDE -->
+                <div class="side-col">
+
+                    <!-- LISTA -->
+                    <div class="list-card">
+                        <div class="card-header">
+                            <span><i class='bx bx-list-check'></i> Passageiros que leram o QR</span>
+                            <span class="count-badge">{{ presencas | length }}</span>
+                        </div>
+                        <div class="pass-list">
+                            {% for p in presencas %}
+                            <div class="pass-item">
+                                <div class="pass-avatar">{{ p.nome[:2].upper() }}</div>
+                                <div class="pass-name">{{ p.nome }}</div>
+                                <div class="pass-time">{{ p.hora }}</div>
+                            </div>
+                            {% else %}
+                            <div class="pass-empty">Nenhum passageiro ainda.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- QR -->
+                    <div class="qr-card">
+                        <div class="qr-title"><i class='bx bx-qr'></i> Gerar QR Code</div>
+                        <div class="qr-box">
+                            <img src="{{ url_for('gerar_qr', motorista_id=session['user_id']) }}"
+                                 alt="QR Code do motorista" width="110" height="110">
+                        </div>
+                        <p class="qr-hint">Passageiros escaneiam para registrar presença</p>
+                        <a href="{{ url_for('gerar_qr', motorista_id=session['user_id']) }}"
+                           class="btn-qr" download="qrcode_motorista.png">
+                            <i class='bx bx-download'></i> Baixar QR Code
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>João</td>
-          <td>joao@email.com</td>
-          <td>Ativo</td>
-        </tr>
-        <tr>
-          <td>Maria</td>
-          <td>maria@email.com</td>
-          <td>Inativo</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<!-- Leaflet para o mapa real -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const pontos = {{ pontos_mapa | tojson }};
 
-  <script>
-    // Simulação de dados
-    document.getElementById("usuarios").innerText = 120;
-    document.getElementById("vendas").innerText = "R$ 8.500";
-    document.getElementById("pedidos").innerText = 35;
-  </script>
+    const map = L.map('map', { zoomControl: true }).setView([-20.75, -51.65], 13);
 
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CartoDB',
+        maxZoom: 19
+    }).addTo(map);
+
+    const icon = L.divIcon({
+        className: '',
+        html: '<div style="width:12px;height:12px;background:#a78bfa;border-radius:50%;border:2px solid #7c5cbf;box-shadow:0 0 6px #a78bfa88"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+
+    pontos.forEach(p => {
+        if (p.lat && p.lng) {
+            L.marker([p.lat, p.lng], { icon })
+             .addTo(map)
+             .bindPopup(`<b>${p.nome}</b><br>${p.ponto}`);
+        }
+    });
+</script>
 </body>
 </html>
