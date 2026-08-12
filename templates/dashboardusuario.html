@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboarduser.css') }}">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <title>Painel do Passageiro</title>
+</head>
+<body class="pg-dash">
+<div class="pdash">
+
+    <!-- ── SIDEBAR ─────────────────────────────────── -->
+    <aside class="psb">
+        <div class="psb-brand">
+            <div class="pav">{{ session['user'][:2].upper() }}</div>
+            <div>
+                <div class="pbn">{{ session['user'] }}</div>
+                <div class="pbs">Passageiro · {{ info.linha }}</div>
+            </div>
+        </div>
+        <nav class="psnav">
+            <div class="pni on"  onclick="showTab('tab-home')">   <i class='bx bxs-dashboard'></i> Dashboard</div>
+            <div class="pni"     onclick="showTab('tab-scanner')"> <i class='bx bx-qr-scan'></i> Registrar presença</div>
+            <div class="pni"     onclick="showTab('tab-historico')"><i class='bx bx-history'></i> Histórico</div>
+            <div class="pni"     onclick="showTab('tab-residencia')"><i class='bx bxs-map-pin'></i> Meu ponto</div>
+        </nav>
+        <div class="psf">
+            <a href="/logout" class="plo"><i class='bx bx-log-out'></i> Sair</a>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ─────────────────────────────────────── -->
+    <div class="pmain">
+
+        <!-- TOPBAR -->
+        <div class="ptop">
+            <h1 id="ptopTitle"><i class='bx bxs-dashboard'></i> Dashboard</h1>
+            <div class="ptop-right">
+                <div id="gps-badge" class="gps-badge">
+                    <div class="dot"></div>
+                    <span id="gps-txt">GPS aguardando...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: HOME ═══════════════════════════════ -->
+        <div id="tab-home" class="ptab active">
+            <div class="pstats">
+
+                <div class="pstat-card">
+                    <div class="pstat-icon blue"><i class='bx bxs-bus'></i></div>
+                    <div>
+                        <div class="pstat-val">{{ info.linha }}</div>
+                        <div class="pstat-lbl">Minha linha</div>
+                    </div>
+                </div>
+
+                <div class="pstat-card">
+                    <div class="pstat-icon purple"><i class='bx bx-check-circle'></i></div>
+                    <div>
+                        <div class="pstat-val">{{ historico | length }}</div>
+                        <div class="pstat-lbl">Presenças registradas</div>
+                    </div>
+                </div>
+
+                <div class="pstat-card">
+                    <div class="pstat-icon green"><i class='bx bxs-map-pin'></i></div>
+                    <div>
+                        <div class="pstat-val">{{ info.ponto or '—' }}</div>
+                        <div class="pstat-lbl">Ponto de coleta</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Última presença -->
+            {% if historico %}
+            <div class="pcard">
+                <div class="pcard-header"><i class='bx bx-time-five'></i> Última presença registrada</div>
+                <div class="ultima-presenca">
+                    <span class="up-data">{{ historico[0].data }} às {{ historico[0].hora }}</span>
+                    <span class="up-mot">Motorista: {{ historico[0].motorista }}</span>
+                    {% if historico[0].distancia_m %}
+                    <span class="up-dist"><i class='bx bx-map'></i> {{ historico[0].distancia_m }} m do ônibus</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="pcard pcard-empty">
+                <i class='bx bx-info-circle'></i>
+                Nenhuma presença registrada ainda. Use a aba <b>Registrar presença</b> para escanear o QR Code do motorista.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ══ TAB: SCANNER ════════════════════════════ -->
+        <div id="tab-scanner" class="ptab">
+            <div class="pcard scanner-card">
+                <div class="pcard-header"><i class='bx bx-qr-scan'></i> Registrar presença</div>
+                <p class="scanner-hint">Aponte a câmera para o QR Code exibido pelo motorista.</p>
+
+                <div id="reader"></div>
+
+                <!-- Status da operação -->
+                <div id="status-box"></div>
+            </div>
+        </div>
+
+        <!-- ══ TAB: HISTÓRICO ══════════════════════════ -->
+        <div id="tab-historico" class="ptab">
+            <div class="pcard">
+                <div class="pcard-header"><i class='bx bx-history'></i> Histórico de presenças</div>
+
+                {% if historico %}
+                <table class="hist-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Motorista</th>
+                            <th>Distância</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in historico %}
+                        <tr>
+                            <td>{{ h.data }}</td>
+                            <td>{{ h.hora }}</td>
+                            <td>{{ h.motorista }}</td>
+                            <td>{% if h.distancia_m %}{{ h.distancia_m }} m{% else %}—{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="pcard-empty">Nenhuma presença registrada ainda.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ══ TAB: MEU PONTO (RESIDÊNCIA) ════════════ -->
+        <div id="tab-residencia" class="ptab">
+            <div class="pcard">
+                <div class="pcard-header"><i class='bx bxs-map-pin'></i> Meu ponto de coleta</div>
+                <p class="scanner-hint">
+                    Salve sua localização atual como ponto de embarque/desembarque.
+                    O motorista verá esse ponto no mapa dele para planejar a rota de retorno.
+                </p>
+
+                <div id="res-status" class="res-status">
+                    {% if info.lat_residencia %}
+                    <span class="res-ok"><i class='bx bx-check-circle'></i> Ponto salvo: {{ info.ponto }}</span>
+                    {% else %}
+                    <span class="res-vazio"><i class='bx bx-map-pin'></i> Nenhum ponto salvo ainda.</span>
+                    {% endif %}
+                </div>
+
+                <button id="btn-residencia" class="btn-res" onclick="salvarResidencia()" disabled>
+                    <i class='bx bx-current-location'></i> Usar minha localização atual
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /pmain -->
+</div><!-- /pdash -->
+
+<script>
+// ══════════════════════════════════════════════
+// NAVEGAÇÃO POR ABAS
+// ══════════════════════════════════════════════
+const titulos = {
+    'tab-home':       '<i class="bx bxs-dashboard"></i> Dashboard',
+    'tab-scanner':    '<i class="bx bx-qr-scan"></i> Registrar presença',
+    'tab-historico':  '<i class="bx bx-history"></i> Histórico',
+    'tab-residencia': '<i class="bx bxs-map-pin"></i> Meu ponto de coleta',
+};
+
+function showTab(id) {
+    // Tabs
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    // Nav highlight
+    document.querySelectorAll('.pni').forEach((n, i) => {
+        n.classList.toggle('on', n.getAttribute('onclick').includes(id));
+    });
+    // Título topbar
+    document.getElementById('ptopTitle').innerHTML = titulos[id] || '';
+
+    // Inicia câmera ao entrar na aba scanner
+    if (id === 'tab-scanner' && !scannerIniciado) iniciarScanner();
+}
+
+// ══════════════════════════════════════════════
+// GPS
+// ══════════════════════════════════════════════
+let posAtual   = null;
+let gpsPronto  = false;
+
+const badge  = document.getElementById('gps-badge');
+const gpsTxt = document.getElementById('gps-txt');
+const btnRes = document.getElementById('btn-residencia');
+
+navigator.geolocation.watchPosition(
+    pos => {
+        posAtual  = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        gpsPronto = true;
+        badge.classList.add('ativo');
+        gpsTxt.textContent = `GPS ±${Math.round(pos.coords.accuracy)} m`;
+        btnRes.disabled = false;
+    },
+    () => { gpsTxt.textContent = 'GPS indisponível'; },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+);
+
+// ══════════════════════════════════════════════
+// SCANNER DE QR CODE
+// ══════════════════════════════════════════════
+let scannerIniciado = false;
+let jaRegistrou     = false;
+let scanner;
+
+function mostrarStatus(tipo, msg) {
+    const box = document.getElementById('status-box');
+    const icones = { ok:'bx-check-circle', erro:'bx-error-circle', loading:'bx-loader-alt bx-spin' };
+    const cores  = { ok:'#6fcf97', erro:'#eb5757', loading:'#a78bfa' };
+    box.innerHTML = `<i class='bx ${icones[tipo]}' style="font-size:1.3rem;color:${cores[tipo]}"></i>
+                     <span>${msg}</span>`;
+    box.className = `status-${tipo}`;
+}
+
+function iniciarScanner() {
+    scannerIniciado = true;
+    scanner = new Html5QrcodeScanner('reader', { fps: 10, qrbox: 220, rememberLastUsedCamera: true }, false);
+    scanner.render(onScanSuccess);
+}
+
+function onScanSuccess(token) {
+    if (jaRegistrou) return;
+    jaRegistrou = true;
+    mostrarStatus('loading', 'Verificando QR Code...');
+
+    const body = { token };
+    if (gpsPronto && posAtual) {
+        body.lat = posAtual.lat;
+        body.lng = posAtual.lng;
+        mostrarStatus('loading', 'Validando sua localização...');
+    }
+
+    fetch('/registrar', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            mostrarStatus('ok', data.msg);
+            scanner.clear();  // para câmera após sucesso
+        } else {
+            mostrarStatus('erro', data.msg);
+            setTimeout(() => { jaRegistrou = false; }, 3000);
+        }
+    })
+    .catch(() => {
+        mostrarStatus('erro', 'Erro de conexão. Tente novamente.');
+        setTimeout(() => { jaRegistrou = false; }, 3000);
+    });
+}
+
+// ══════════════════════════════════════════════
+// SALVAR RESIDÊNCIA
+// ══════════════════════════════════════════════
+function salvarResidencia() {
+    if (!posAtual) { alert('GPS ainda não está pronto.'); return; }
+
+    btnRes.disabled  = true;
+    btnRes.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Salvando...";
+
+    fetch('/usuario/salvar_residencia', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ lat: posAtual.lat, lng: posAtual.lng })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('res-status').innerHTML =
+            `<span class="res-ok"><i class='bx bx-check-circle'></i> ${data.msg || data.erro}</span>`;
+        btnRes.innerHTML = "<i class='bx bx-check'></i> Salvo!";
+        setTimeout(() => {
+            btnRes.innerHTML = "<i class='bx bx-current-location'></i> Usar minha localização atual";
+            btnRes.disabled  = false;
+        }, 3000);
+    })
+    .catch(() => {
+        btnRes.innerHTML = "<i class='bx bx-error'></i> Erro ao salvar.";
+        btnRes.disabled  = false;
+    });
+}
+</script>
+</body>
+</html>

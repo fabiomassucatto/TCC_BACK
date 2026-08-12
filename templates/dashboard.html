@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <title>Painel do Motorista</title>
+</head>
+<body>
+<div class="dash">
+
+    <!-- ── SIDEBAR ─────────────────────────────── -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="avatar">{{ session['user'][:2].upper() }}</div>
+            <div class="brand-info">
+                <p>{{ session['user'] }}</p>
+                <span>Motorista</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" onclick="showTab('tab-dash')">
+                <i class='bx bxs-dashboard'></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="showTab('tab-qr')">
+                <i class='bx bx-qr'></i> Meu QR Code
+            </div>
+            <div class="nav-item" onclick="showTab('tab-pass')">
+                <i class='bx bxs-group'></i> Passageiros
+            </div>
+            <div class="nav-item" onclick="showTab('tab-mapa')">
+                <i class='bx bx-map'></i> Mapa
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/logout" class="logout-btn"><i class='bx bx-log-out'></i> Sair</a>
+        </div>
+    </aside>
+
+    <!-- ── MAIN ─────────────────────────────────── -->
+    <div class="main">
+        <div class="topbar">
+            <h1 id="topTitle"><i class='bx bxs-dashboard'></i> Painel do motorista</h1>
+            <div class="topbar-right">
+                <span class="status-live"><span class="dot"></span>Rota ativa</span>
+                <div id="gps-mot" class="gps-badge-mot">
+                    <div class="dot-gps"></div>
+                    <span id="gps-mot-txt">GPS aguardando...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ══ TAB: DASHBOARD ════════════════════ -->
+            <div id="tab-dash" class="tab active">
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class='bx bxs-group'></i></div>
+                        <div>
+                            <div class="stat-val">{{ presencas | length }}</div>
+                            <div class="stat-lbl">Passageiros hoje</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class='bx bx-qr-scan'></i></div>
+                        <div>
+                            <div class="stat-val">{{ presencas | length }}</div>
+                            <div class="stat-lbl">Leituras de QR</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class='bx bx-map-pin'></i></div>
+                        <div>
+                            <div class="stat-val">{{ pontos_unicos }}</div>
+                            <div class="stat-lbl">Pontos ativos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista rápida dos últimos passageiros -->
+                <div class="list-card">
+                    <div class="card-header">
+                        <span><i class='bx bx-list-check'></i> Passageiros de hoje</span>
+                        <span class="count-badge">{{ presencas | length }}</span>
+                    </div>
+                    <div class="pass-list">
+                        {% for p in presencas %}
+                        <div class="pass-item">
+                            <div class="pass-avatar">{{ p.nome[:2].upper() }}</div>
+                            <div class="pass-info">
+                                <div class="pass-name">{{ p.nome }}</div>
+                                <div class="pass-linha">{{ p.linha }}</div>
+                            </div>
+                            <div class="pass-right">
+                                <div class="pass-time">{{ p.hora }}</div>
+                                {% if p.distancia_m %}
+                                <div class="pass-dist">{{ p.distancia_m }} m</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="pass-empty">Nenhum passageiro registrado hoje.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ TAB: QR CODE ══════════════════════ -->
+            <div id="tab-qr" class="tab">
+                <div class="qr-full-card">
+                    <div class="qr-title"><i class='bx bx-qr'></i> QR Code da rota</div>
+                    <p class="qr-hint">Este código é renovado automaticamente a cada 15 segundos.<br>
+                    Passageiros escaneiam para registrar presença.</p>
+
+                    <div class="qr-box-full">
+                        <img id="qrImg" src="/motorista/qr_atual" alt="QR Code" width="220" height="220">
+                        <div id="qr-timer" class="qr-timer">Renova em <span id="qr-count">15</span>s</div>
+                    </div>
+
+                    <a href="/motorista/qr_atual" class="btn-qr" download="qrcode.png">
+                        <i class='bx bx-download'></i> Baixar QR Code
+                    </a>
+                </div>
+            </div>
+
+            <!-- ══ TAB: PASSAGEIROS ══════════════════ -->
+            <div id="tab-pass" class="tab">
+                <div class="list-card">
+                    <div class="card-header">
+                        <span><i class='bx bxs-group'></i> Lista de passageiros — hoje</span>
+                        <span class="count-badge">{{ presencas | length }}</span>
+                    </div>
+                    <table class="pass-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Linha</th>
+                                <th>Hora</th>
+                                <th>Distância</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in presencas %}
+                            <tr>
+                                <td>{{ p.nome }}</td>
+                                <td>{{ p.linha }}</td>
+                                <td>{{ p.hora }}</td>
+                                <td>{% if p.distancia_m %}{{ p.distancia_m }} m{% else %}—{% endif %}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="pass-empty">Nenhum passageiro hoje.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ══ TAB: MAPA ══════════════════════════ -->
+            <div id="tab-mapa" class="tab">
+                <div class="map-card">
+                    <div class="card-header">
+                        <span><i class='bx bx-map'></i> Pontos de coleta dos passageiros</span>
+                        <span class="muted">{{ pontos_mapa | length }} ponto(s) cadastrado(s)</span>
+                    </div>
+                    <div class="map-body" id="map"></div>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </div><!-- /main -->
+</div><!-- /dash -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// NAVEGAÇÃO POR ABAS
+// ══════════════════════════════════════════════
+const tabTitles = {
+    'tab-dash': '<i class="bx bxs-dashboard"></i> Painel do motorista',
+    'tab-qr':   '<i class="bx bx-qr"></i> Meu QR Code',
+    'tab-pass': '<i class="bx bxs-group"></i> Passageiros',
+    'tab-mapa': '<i class="bx bx-map"></i> Mapa de pontos',
+};
+
+function showTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n =>
+        n.classList.toggle('active', n.getAttribute('onclick')?.includes(id))
+    );
+    document.getElementById('topTitle').innerHTML = tabTitles[id] || '';
+    if (id === 'tab-mapa') setTimeout(() => map.invalidateSize(), 100);
+}
+
+// ══════════════════════════════════════════════
+// MAPA LEAFLET
+// ══════════════════════════════════════════════
+const pontos = {{ pontos_mapa | tojson }};
+const map = L.map('map', { zoomControl: true }).setView([-20.75, -51.65], 13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CartoDB', maxZoom: 19
+}).addTo(map);
+
+const iconPass = L.divIcon({
+    className: '',
+    html: '<div style="width:12px;height:12px;background:#a78bfa;border-radius:50%;border:2px solid #7c5cbf;box-shadow:0 0 6px #a78bfa88"></div>',
+    iconSize: [12,12], iconAnchor: [6,6]
+});
+
+pontos.forEach(p => {
+    if (p.lat && p.lng)
+        L.marker([p.lat, p.lng], { icon: iconPass })
+         .addTo(map)
+         .bindPopup(`<b>${p.nome}</b><br>${p.ponto}<br><i>${p.linha}</i>`);
+});
+
+// Marcador da posição do próprio motorista (atualiza em tempo real)
+let motMarcador = null;
+const iconMot = L.divIcon({
+    className: '',
+    html: '<div style="width:16px;height:16px;background:#6fcf97;border-radius:50%;border:2px solid #2d6a4f;box-shadow:0 0 8px #6fcf9788"></div>',
+    iconSize: [16,16], iconAnchor: [8,8]
+});
+
+// ══════════════════════════════════════════════
+// GPS DO MOTORISTA
+// ══════════════════════════════════════════════
+const gpsBadge  = document.getElementById('gps-mot');
+const gpsTxt    = document.getElementById('gps-mot-txt');
+
+function enviarGPS(lat, lng) {
+    fetch('/motorista/atualizar_localizacao', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ lat, lng })
+    });
+    // Atualiza marcador do motorista no mapa
+    if (motMarcador) {
+        motMarcador.setLatLng([lat, lng]);
+    } else {
+        motMarcador = L.marker([lat, lng], { icon: iconMot })
+            .addTo(map)
+            .bindPopup('<b>Sua posição atual</b>');
+    }
+}
+
+if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+        pos => {
+            gpsBadge.classList.add('ativo');
+            gpsTxt.textContent = `GPS ±${Math.round(pos.coords.accuracy)} m`;
+            enviarGPS(pos.coords.latitude, pos.coords.longitude);
+        },
+        err => { gpsTxt.textContent = 'GPS negado'; },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 8000 }
+    );
+}
+
+// ══════════════════════════════════════════════
+// QR CODE DINÂMICO — renova a cada 15s
+// ══════════════════════════════════════════════
+let qrCount = 15;
+const qrImg  = document.getElementById('qrImg');
+const qrNum  = document.getElementById('qr-count');
+
+setInterval(() => {
+    qrCount--;
+    if (qrNum) qrNum.textContent = qrCount;
+    if (qrCount <= 0) {
+        qrCount = 15;
+        if (qrImg) qrImg.src = '/motorista/qr_atual?t=' + Date.now();
+    }
+}, 1000);
+</script>
+</body>
+</html>

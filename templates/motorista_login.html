@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Painel do Motorista</title>
+</head>
+<body>
+    <main class="container">
+        <h1>Olá, {{ nome }}</h1>
+
+        <p style="text-align:center; margin: 16px 0 8px; color: rgba(255,255,255,.75); font-size:14px;">
+            Seu QR Code para registro de presença:
+        </p>
+
+        <div style="text-align:center; margin: 16px 0;">
+            <img src="{{ url_for('gerar_qr', motorista_id=motorista_id) }}"
+                 alt="QR Code"
+                 style="border-radius:8px; width:200px; height:200px;">
+        </div>
+
+        <a href="/logout" class="login" style="display:block; text-align:center; line-height:50px; text-decoration:none; margin-top:20px;">
+            Sair
+        </a>
+    </main>
+</body>
+</html>
