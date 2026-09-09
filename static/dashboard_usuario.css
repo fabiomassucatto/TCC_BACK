@@ -1,0 +1,127 @@
+/* ════════════════════════════════════════
+   Dashboard do Passageiro — dashboard_usuario.css
+   ════════════════════════════════════════ */
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+body.pg-dash {
+    background:#0f0f1a;
+    color:#e0e0e0;
+    font-family:'Segoe UI', sans-serif;
+    min-height:100vh;
+}
+
+.pdash { display:flex; min-height:100vh; }
+
+/* ── Sidebar ──────────────────────────── */
+.psb {
+    width:240px; flex-shrink:0;
+    background:#12121e;
+    border-right:1px solid #2a2a3d;
+    display:flex; flex-direction:column;
+    padding:20px 0;
+    position:sticky; top:0; height:100vh;
+}
+.psb-brand {
+    display:flex; align-items:center; gap:12px;
+    padding:0 20px 20px;
+    border-bottom:1px solid #2a2a3d;
+    margin-bottom:16px;
+}
+.pav {
+    width:40px; height:40px; border-radius:10px;
+    background:linear-gradient(135deg,#a78bfa,#6d5ce7);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:16px; color:#fff; flex-shrink:0;
+}
+.pbn { font-size:14px; font-weight:600; color:#fff; }
+.pbs { font-size:11px; color:#888; margin-top:2px; }
+
+.psnav { flex:1; padding:0 10px; }
+.pni {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:8px;
+    font-size:13px; color:#888; cursor:pointer;
+    margin-bottom:2px; transition:all .15s;
+}
+.pni:hover { background:#1e1e30; color:#e0e0e0; }
+.pni.on   { background:#1e1e30; color:#a78bfa; }
+.pni i    { font-size:18px; }
+
+.psf { padding:16px 20px 0; border-top:1px solid #2a2a3d; margin-top:auto; }
+.plo {
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:#888; text-decoration:none;
+    padding:8px 0;
+}
+.plo:hover { color:#eb5757; }
+
+/* ── Main ─────────────────────────────── */
+.pmn { flex:1; display:flex; flex-direction:column; min-height:100vh; }
+
+.ptb {
+    background:#12121e; border-bottom:1px solid #2a2a3d;
+    padding:16px 24px; display:flex; align-items:center;
+    justify-content:space-between; position:sticky; top:0; z-index:10;
+}
+.ptb h1 { font-size:18px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.ptbr { display:flex; align-items:center; gap:12px; }
+
+/* ── GPS badge ────────────────────────── */
+.gps-badge {
+    display:flex;align-items:center;gap:6px;
+    padding:5px 12px;border-radius:20px;font-size:12px;
+    background:#1a1a2e;border:1px solid #2a2a4a;color:#888;
+}
+.gps-badge.ativo { border-color:#2d6a4f;color:#6fcf97; }
+.gdot { width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0; }
+.gps-badge.ativo .gdot { background:#6fcf97;animation:pulse 1.5s infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Content/Tabs ─────────────────────── */
+.pcnt { padding:24px; flex:1; }
+.ptab { display:none; }
+.ptab.active { display:block; }
+
+/* ── Cards ────────────────────────────── */
+.pcard {
+    background:#12121e; border:1px solid #2a2a3d;
+    border-radius:12px; padding:20px; margin-bottom:16px;
+}
+.pchd {
+    font-size:13px; font-weight:500; color:#e0e0e0;
+    margin-bottom:14px; display:flex; align-items:center; gap:6px;
+}
+
+/* ── Top cards (home) ─────────────────── */
+.ptop-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+.ptop-row .pcard {
+    flex:1; min-width:160px; margin-bottom:0;
+    display:flex; flex-direction:column;
+}
+.pbig { font-size:1.6rem; font-weight:700; color:#fff; margin-top:4px; }
+.psub { font-size:12px; color:#888; margin-top:4px; }
+
+/* ── Tabela histórico ─────────────────── */
+.phist { width:100%;border-collapse:collapse;font-size:13px;margin-top:8px; }
+.phist th {
+    text-align:left;padding:8px 10px;
+    border-bottom:1px solid #2a2a3d;color:#888;font-weight:500;
+}
+.phist td { padding:9px 10px;border-bottom:1px solid #1a1a2e;color:#e0e0e0; }
+.phist tr:last-child td { border-bottom:none; }
+
+/* ── Botão residência ─────────────────── */
+.pbtn {
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:12px;border-radius:8px;border:none;
+    background:#2a2a4a;color:#a78bfa;font-size:14px;cursor:pointer;
+}
+.pbtn:hover    { background:#3a3a6a; }
+.pbtn:disabled { opacity:.4;cursor:default; }
+
+/* ── Responsivo mobile ────────────────── */
+@media(max-width:640px){
+    .psb { width:200px; }
+    .ptop-row .pcard { min-width:130px; }
+    .pbig { font-size:1.2rem; }
+}

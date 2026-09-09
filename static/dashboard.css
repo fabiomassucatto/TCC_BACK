@@ -458,3 +458,55 @@ body:has(.dash) {
     .dash .stats-row   { grid-template-columns: 1fr 1fr; }
     .dash .sidebar     { width: 180px; }
 }
+/* ── Tabs ────────────────────────────── */
+.tab { display:none; }
+.tab.active { display:block; }
+
+/* ── GPS badge motorista ─────────────── */
+.gps-mot-badge {
+    display:flex;align-items:center;gap:6px;
+    padding:5px 12px;border-radius:20px;font-size:12px;
+    background:#1a1a2e;border:1px solid #2a2a4a;color:#888;
+}
+.gps-mot-badge.ativo { border-color:#2d6a4f;color:#6fcf97; }
+.gps-dot { width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0; }
+.gps-mot-badge.ativo .gps-dot { background:#6fcf97;animation:pulse 1.5s infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Passageiro item extra ───────────── */
+.pass-info { flex:1; }
+.pass-sub  { font-size:11px;color:#888;margin-top:2px; }
+.pass-right{ text-align:right; }
+.pass-dist { font-size:11px;color:#6fcf97;margin-top:2px; }
+
+/* ── Tabela passageiros ──────────────── */
+.pass-table { width:100%;border-collapse:collapse;font-size:13px;margin-top:8px; }
+.pass-table th { text-align:left;padding:8px 12px;border-bottom:1px solid #2a2a3d;color:#888;font-weight:500; }
+.pass-table td { padding:10px 12px;border-bottom:1px solid #1a1a2e;color:#e0e0e0; }
+.pass-table tr:last-child td { border-bottom:none; }
+
+/* ── QR timer mini ───────────────────── */
+.qr-timer-mini { font-size:11px;color:#888;margin:4px 0 2px;text-align:center; }
+
+/* ── QR full card ────────────────────── */
+.qr-full-card {
+    background:#12121e;border:1px solid #2a2a3d;border-radius:12px;
+    padding:32px;max-width:360px;margin:0 auto;text-align:center;
+}
+.qr-box-full  { margin:20px auto;display:inline-block; }
+.qr-box-full img { border-radius:10px;display:block; }
+.qr-timer-full { font-size:12px;color:#888;margin:8px 0 16px; }
+.qr-hint-full  { font-size:13px;color:#888;line-height:1.5;margin:8px 0; }
+.btn-qr {
+    display:inline-flex;align-items:center;gap:6px;
+    padding:10px 20px;border-radius:8px;
+    background:#2a2a4a;color:#a78bfa;text-decoration:none;font-size:14px;
+}
+.btn-qr:hover { background:#3a3a6a; }
+
+/* ── Msg erro (cadastro/login) ───────── */
+.msg-erro {
+    background:#3a1a1a;border:1px solid #8b2222;color:#eb5757;
+    border-radius:8px;padding:10px 14px;font-size:13px;
+    margin-bottom:14px;display:flex;align-items:center;gap:6px;
+}

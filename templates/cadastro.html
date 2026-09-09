@@ -9,40 +9,63 @@
 </head>
 <body>
     <main class="container">
-        <form method="post" action="/cadastro">
+        <form method="post" action="/cadastro" id="formCad">
             <h1>Cadastro</h1>
+
+            {% if erro %}
+            <div class="msg-erro"><i class='bx bx-error-circle'></i> {{ erro }}</div>
+            {% endif %}
 
             <div class="input-box">
                 <input name="nome" placeholder="Nome completo" type="text" required>
                 <i class="bx bxs-user"></i>
             </div>
-
             <div class="input-box">
-                <input name="email" placeholder="Email" type="email" required>
+                <input name="email" placeholder="E-mail" type="email" required>
                 <i class="bx bxs-envelope"></i>
             </div>
-
             <div class="input-box">
-                <input name="senha" placeholder="Senha" type="password" required>
+                <input name="senha" id="s1" placeholder="Senha" type="password" required>
+                <i class="bx bxs-lock-alt"></i>
+            </div>
+            <div class="input-box">
+                <input name="confirmar_senha" id="s2" placeholder="Confirmar senha" type="password" required>
                 <i class="bx bxs-lock-alt"></i>
             </div>
 
+            <!-- Linha do ônibus -->
             <div class="input-box">
-                <input name="confirmar_senha" placeholder="Confirmar senha" type="password" required>
-                <i class="bx bxs-lock-alt"></i>
+                <select name="linha" required style="width:100%;background:transparent;border:none;outline:none;color:inherit;font-size:1rem">
+                    <option value="" disabled selected>Selecione sua linha</option>
+                    <option value="Linha 1">Linha 1</option>
+                    <option value="Linha 2">Linha 2</option>
+                    <option value="Linha 3">Linha 3</option>
+                </select>
+                <i class="bx bxs-bus"></i>
             </div>
 
             <div class="input-box">
-                <input name="ponto" placeholder="Adicione Seu Ponto de Coleta" type="text" required>
+                <input name="ponto" placeholder="Ponto de coleta (ex: Rua das Flores)" type="text" required>
                 <i class="bx bxs-map"></i>
             </div>
+
+            <p id="erroSenha" style="color:#eb5757;font-size:.82rem;margin-bottom:10px;display:none">
+                <i class='bx bx-error-circle'></i> As senhas não coincidem.
+            </p>
 
             <button type="submit" class="login">Cadastrar</button>
 
             <div class="Resgitrar">
-                <p>Já tem uma conta? <a href="/">Login</a></p>
+                <p>Já tem uma conta? <a href="/login">Login</a></p>
             </div>
         </form>
     </main>
+    <script>
+        document.getElementById('formCad').addEventListener('submit', function(e) {
+            const ok = document.getElementById('s1').value === document.getElementById('s2').value;
+            document.getElementById('erroSenha').style.display = ok ? 'none' : 'block';
+            if (!ok) e.preventDefault();
+        });
+    </script>
 </body>
 </html>

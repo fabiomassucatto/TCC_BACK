@@ -165,3 +165,25 @@ body{
     font-size: 12px;
     color: rgba(255, 255, 255, .5);
 }
+
+/* ── Msg erro (cadastro/login) ───────── */
+.msg-erro {
+    background:#3a1a1a;border:1px solid #8b2222;color:#eb5757;
+    border-radius:8px;padding:10px 14px;font-size:13px;
+    margin-bottom:14px;display:flex;align-items:center;gap:6px;
+}
+
+/* ── Toggle wrapper (login) ──────────── */
+.toggle-wrapper { display:flex;gap:8px;margin-bottom:20px;justify-content:center; }
+.toggle-btn {
+    flex:1;padding:10px;border-radius:8px;border:1px solid #2a2a4a;
+    background:#1a1a2e;color:#888;font-size:13px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.toggle-btn.active { background:#2a2a4a;color:#a78bfa;border-color:#4a4a8a; }
+
+/* ── Aviso motorista (login) ─────────── */
+.aviso-motorista {
+    text-align:center;font-size:12px;color:#888;
+    margin-top:10px;display:none;
+}
