@@ -159,7 +159,7 @@ def dashboard():
     hoje = datetime.now().strftime("%Y-%m-%d")
 
     presencas = conn.execute("""
-        SELECT u.nome, u.linha,
+        SELECT u.nome, u.ponto, u.linha,
                strftime('%H:%M', p.data_hora) AS hora,
                CAST(p.distancia_m AS INTEGER)  AS distancia_m
         FROM presencas p JOIN usuarios u ON u.id = p.usuario_id
@@ -337,5 +337,5 @@ def salvar_residencia():
     conn.close()
     return jsonify({"status":"ok","msg":"Ponto de coleta salvo com sucesso!"})
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
