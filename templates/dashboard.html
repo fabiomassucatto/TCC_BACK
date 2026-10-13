@@ -211,8 +211,8 @@ function showTab(id) {
 }
 
 // ── Mapas ──────────────────────────────────────────
-const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const tileOpt = { attribution: '&copy; OpenStreetMap &copy; CartoDB', maxZoom: 19 };
+const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const tileOpt = { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 };
 
 const mapDash = L.map('map-dash', { zoomControl:false }).setView([-20.75,-51.65], 13);
 L.tileLayer(tileUrl, tileOpt).addTo(mapDash);
