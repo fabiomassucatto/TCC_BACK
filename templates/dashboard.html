@@ -86,7 +86,7 @@
                             <span><i class='bx bx-map'></i> Localização dos passageiros</span>
                             <span class="muted">{{ pontos_mapa | length }} ponto(s)</span>
                         </div>
-                        <div class="map-body" id="map-dash"></div>
+                        <div class="map-body" id="map-dash" style="height:300px"></div>
                     </div>
 
                     <div class="side-col">
@@ -207,19 +207,11 @@ function showTab(id) {
         'tab-mapa': '<i class="bx bx-map"></i> Mapa de pontos',
     };
     document.getElementById('topTitle').innerHTML = titles[id] || '';
-    if (id === 'tab-mapa') setTimeout(() => mapFull.invalidateSize(), 100);
+    if (id === 'tab-mapa') setTimeout(() => mapFull.invalidateSize(), 150);
+    if (id === 'tab-dash') setTimeout(() => mapDash.invalidateSize(), 150);
 }
 
-// ── Mapas ──────────────────────────────────────────
-const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const tileOpt = { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 };
-
-const mapDash = L.map('map-dash', { zoomControl:false }).setView([-20.75,-51.65], 13);
-L.tileLayer(tileUrl, tileOpt).addTo(mapDash);
-
-const mapFull = L.map('map-full').setView([-20.75,-51.65], 13);
-L.tileLayer(tileUrl, tileOpt).addTo(mapFull);
-
+// ── Ícones ─────────────────────────────────────────
 const iconPass = L.divIcon({
     className:'',
     html:'<div style="width:12px;height:12px;background:#a78bfa;border-radius:50%;border:2px solid #7c5cbf;box-shadow:0 0 6px #a78bfa88"></div>',
@@ -231,41 +223,76 @@ const iconMot = L.divIcon({
     iconSize:[16,16], iconAnchor:[8,8]
 });
 
+// ── Mapas ──────────────────────────────────────────
+const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const tileOpt = { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 };
+
+// Mapa do dashboard — começa sem centro fixo, centraliza no GPS
+const mapDash = L.map('map-dash', { zoomControl: true }).setView([-20.75, -51.65], 13);
+L.tileLayer(tileUrl, tileOpt).addTo(mapDash);
+
+// Mapa da aba Mapa — igual
+const mapFull = L.map('map-full').setView([-20.75, -51.65], 13);
+L.tileLayer(tileUrl, tileOpt).addTo(mapFull);
+
+// Adiciona marcadores dos passageiros nos dois mapas
 pontos.forEach(p => {
     if (!p.lat || !p.lng) return;
     const popup = `<b>${p.nome}</b><br>${p.ponto}<br><i>${p.linha || ''}</i>`;
-    L.marker([p.lat,p.lng], { icon:iconPass }).addTo(mapDash).bindPopup(popup);
-    L.marker([p.lat,p.lng], { icon:iconPass }).addTo(mapFull).bindPopup(popup);
+    L.marker([p.lat, p.lng], { icon: iconPass }).addTo(mapDash).bindPopup(popup);
+    L.marker([p.lat, p.lng], { icon: iconPass }).addTo(mapFull).bindPopup(popup);
 });
 
-// ── GPS do motorista ───────────────────────────────
+// ── GPS do motorista — posição REAL ───────────────
 let motMarcadorDash = null, motMarcadorFull = null;
 const gpsBadge = document.getElementById('gps-mot');
 const gpsTxt   = document.getElementById('gps-mot-txt');
+let gpsOk = false;
 
 function moverMarcadorMot(lat, lng) {
-    if (motMarcadorDash) { motMarcadorDash.setLatLng([lat,lng]); }
-    else { motMarcadorDash = L.marker([lat,lng],{icon:iconMot}).addTo(mapDash).bindPopup('<b>Sua posição</b>'); }
-    if (motMarcadorFull) { motMarcadorFull.setLatLng([lat,lng]); }
-    else { motMarcadorFull = L.marker([lat,lng],{icon:iconMot}).addTo(mapFull).bindPopup('<b>Sua posição</b>'); }
+    // Centraliza o mapa na posição real do motorista (só na primeira vez)
+    if (!gpsOk) {
+        mapDash.setView([lat, lng], 15);
+        mapFull.setView([lat, lng], 15);
+        gpsOk = true;
+    }
+    // Atualiza ou cria marcador em ambos os mapas
+    if (motMarcadorDash) {
+        motMarcadorDash.setLatLng([lat, lng]);
+    } else {
+        motMarcadorDash = L.marker([lat, lng], { icon: iconMot })
+            .addTo(mapDash).bindPopup('<b>Sua posição</b>');
+    }
+    if (motMarcadorFull) {
+        motMarcadorFull.setLatLng([lat, lng]);
+    } else {
+        motMarcadorFull = L.marker([lat, lng], { icon: iconMot })
+            .addTo(mapFull).bindPopup('<b>Sua posição</b>');
+    }
 }
 
 if (navigator.geolocation) {
     navigator.geolocation.watchPosition(
         pos => {
-            const { latitude:lat, longitude:lng, accuracy } = pos.coords;
+            const { latitude: lat, longitude: lng, accuracy } = pos.coords;
             gpsBadge.classList.add('ativo');
             gpsTxt.textContent = `GPS ±${Math.round(accuracy)} m`;
             moverMarcadorMot(lat, lng);
+            // Envia para o backend para a validação de distância dos passageiros
             fetch('/motorista/atualizar_localizacao', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lat, lng })
             });
         },
-        () => { gpsTxt.textContent = 'GPS negado'; },
-        { enableHighAccuracy:true, timeout:15000, maximumAge:8000 }
+        err => {
+            gpsTxt.textContent = 'GPS negado ou indisponível';
+            console.warn('Erro GPS motorista:', err.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 8000 }
     );
+} else {
+    gpsTxt.textContent = 'GPS não suportado';
 }
 
 // ── QR Code dinâmico — contador regressivo ─────────
@@ -285,6 +312,11 @@ setInterval(() => {
         if (f) f.src = '/motorista/qr_atual' + ts;
     }
 }, 1000);
+
+// Garante que o mapa do dashboard renderize corretamente ao carregar
+window.addEventListener('load', () => {
+    setTimeout(() => mapDash.invalidateSize(), 300);
+});
 </script>
 </body>
 </html>
