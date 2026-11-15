@@ -174,10 +174,10 @@ body{
 }
 
 /* ── Toggle wrapper (login) ──────────── */
-.toggle-wrapper { display:flex;gap:8px;margin-bottom:20px;justify-content:center; }
+.toggle-wrapper { display:flex;gap:5px;margin-bottom:20px;justify-content:center; }
 .toggle-btn {
-    flex:1;padding:10px;border-radius:8px;border:1px solid #2a2a4a;
-    background:#1a1a2e;color:#888;font-size:13px;cursor:pointer;
+    flex:1;padding:10px 6px;border-radius:8px;border:1px solid #2a2a4a;
+    background:#1a1a2e;color:#888;font-size:12px;cursor:pointer;
     display:flex;align-items:center;justify-content:center;gap:6px;
 }
 .toggle-btn.active { background:#2a2a4a;color:#a78bfa;border-color:#4a4a8a; }

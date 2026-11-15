@@ -12,19 +12,26 @@
 
         <!-- Seletor de perfil -->
         <div class="toggle-wrapper">
-            <button type="button" class="toggle-btn active" id="btnUsuario" onclick="setRole('usuario')">
+            <button type="button" class="toggle-btn {% if tipo == 'usuario' %}active{% endif %}" id="btnUsuario" onclick="setRole('usuario')">
                 <i class='bx bxs-user'></i> Usuário
             </button>
-            <button type="button" class="toggle-btn" id="btnMotorista" onclick="setRole('motorista')">
+            <button type="button" class="toggle-btn {% if tipo == 'motorista' %}active{% endif %}" id="btnMotorista" onclick="setRole('motorista')">
                 <i class='bx bxs-bus'></i> Motorista
+            </button>
+            <button type="button" class="toggle-btn {% if tipo == 'rh' %}active{% endif %}" id="btnRh" onclick="setRole('rh')">
+                <i class='bx bxs-briefcase'></i> RH
             </button>
         </div>
 
         <!-- Formulário único -->
         <form method="post" action="/login" id="loginForm">
-            <input type="hidden" name="tipo" id="tipoInput" value="usuario">
+            <input type="hidden" name="tipo" id="tipoInput" value="{{ tipo }}">
 
-            <h1 id="tituloLogin">Login</h1>
+            <h1 id="tituloLogin">{% if tipo == 'motorista' %}Motorista{% elif tipo == 'rh' %}RH{% else %}Login{% endif %}</h1>
+
+            {% if erro %}
+            <div class="msg-erro" role="alert">{{ erro }}</div>
+            {% endif %}
 
             <div class="input-box">
                 <input name="email" placeholder="E-mail" type="email" required>
@@ -45,14 +52,13 @@
 
             <button type="submit" class="login" id="btnSubmit">Entrar</button>
 
-            <!-- Só aparece para usuário -->
             <div class="Registrar" id="linkCadastro">
                 <p>Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
             </div>
 
-            <!-- Só aparece para motorista -->
-            <div class="aviso-motorista" id="avisoMotorista">
-                <p>Acesso restrito a motoristas credenciados.</p>
+            <div class="aviso-motorista" id="avisoRestrito">
+                <p id="avisoMotorista">Acesso restrito a motoristas credenciados.</p>
+                <p id="avisoRh">Acesso restrito a contas de RH cadastradas pela administração.</p>
             </div>
 
         </form>
@@ -60,29 +66,32 @@
 
     <script>
         function setRole(role) {
-            const btnUsuario   = document.getElementById('btnUsuario');
-            const btnMotorista = document.getElementById('btnMotorista');
-            const tipoInput    = document.getElementById('tipoInput');
-            const titulo       = document.getElementById('tituloLogin');
-            const linkCadastro = document.getElementById('linkCadastro');
-            const aviso        = document.getElementById('avisoMotorista');
+            const roles = ['usuario', 'motorista', 'rh'];
+            const titulos = {
+                usuario: 'Login',
+                motorista: 'Motorista',
+                rh: 'RH'
+            };
+            const tipo = roles.includes(role) ? role : 'usuario';
 
-            if (role === 'motorista') {
-                btnMotorista.classList.add('active');
-                btnUsuario.classList.remove('active');
-                tipoInput.value    = 'motorista';
-                titulo.textContent = 'Motorista';
-                linkCadastro.style.display = 'none';
-                aviso.style.display        = 'block';
-            } else {
-                btnUsuario.classList.add('active');
-                btnMotorista.classList.remove('active');
-                tipoInput.value    = 'usuario';
-                titulo.textContent = 'Login';
-                linkCadastro.style.display = 'block';
-                aviso.style.display        = 'none';
-            }
+            document.getElementById('tipoInput').value = tipo;
+            document.getElementById('tituloLogin').textContent = titulos[tipo];
+            document.getElementById('linkCadastro').style.display =
+                tipo === 'usuario' ? 'block' : 'none';
+            document.getElementById('avisoRestrito').style.display =
+                tipo === 'usuario' ? 'none' : 'block';
+            document.getElementById('avisoMotorista').style.display =
+                tipo === 'motorista' ? 'block' : 'none';
+            document.getElementById('avisoRh').style.display =
+                tipo === 'rh' ? 'block' : 'none';
+            document.querySelectorAll('.toggle-btn').forEach(button => {
+                const ativo = button.id === `btn${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}`;
+                button.classList.toggle('active', ativo);
+                button.setAttribute('aria-pressed', ativo);
+            });
         }
+
+        setRole(document.getElementById('tipoInput').value);
     </script>
 </body>
 </html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='rh.css') }}">
+    <title>Acompanhamento de embarques | RH</title>
+</head>
+<body class="rh-page">
+<div class="rh-layout">
+    <aside class="rh-sidebar">
+        <a class="rh-brand" href="{{ url_for('rh_dashboard') }}">
+            <span class="rh-brand-icon"><i class='bx bxs-bus'></i></span>
+            <span><strong>Transporte</strong><small>Painel administrativo</small></span>
+        </a>
+        <div class="rh-sidebar-label">GESTÃO</div>
+        <a class="rh-nav-item active" href="{{ url_for('rh_dashboard') }}">
+            <i class='bx bxs-dashboard'></i> Acompanhamento
+        </a>
+        <div class="rh-account">
+            <div class="rh-avatar">{{ session['user'][:2].upper() }}</div>
+            <div><strong>{{ session['user'] }}</strong><small>Recursos humanos</small></div>
+        </div>
+        <a class="rh-logout" href="{{ url_for('logout') }}">
+            <i class='bx bx-log-out'></i> Sair
+        </a>
+    </aside>
+
+    <main class="rh-main">
+        <header class="rh-topbar">
+            <div>
+                <span class="rh-eyebrow">GESTÃO DE TRANSPORTE</span>
+                <h1>Acompanhamento de embarques</h1>
+            </div>
+            <span class="rh-date-label"><i class='bx bx-calendar'></i> {{ data }}</span>
+        </header>
+
+        <section class="rh-content">
+            <div class="rh-intro">
+                <div>
+                    <h2>Presença dos passageiros</h2>
+                    <p>Consulte as confirmações de embarque registradas pelo QR Code.</p>
+                </div>
+                <span class="rh-live"><span></span> Dados do sistema</span>
+            </div>
+
+            <div class="rh-stats">
+                <article class="rh-stat">
+                    <span class="rh-stat-icon purple"><i class='bx bxs-group'></i></span>
+                    <div><span class="rh-stat-label">Passageiros na lista</span><strong>{{ total }}</strong></div>
+                </article>
+                <article class="rh-stat">
+                    <span class="rh-stat-icon green"><i class='bx bx-check-circle'></i></span>
+                    <div><span class="rh-stat-label">Presença confirmada</span><strong>{{ confirmados }}</strong></div>
+                </article>
+                <article class="rh-stat">
+                    <span class="rh-stat-icon amber"><i class='bx bx-time-five'></i></span>
+                    <div><span class="rh-stat-label">Sem confirmação</span><strong>{{ pendentes }}</strong></div>
+                </article>
+                <article class="rh-stat">
+                    <span class="rh-stat-icon blue"><i class='bx bx-bar-chart-alt-2'></i></span>
+                    <div><span class="rh-stat-label">Confirmação no filtro</span><strong>{{ percentual }}%</strong></div>
+                </article>
+            </div>
+
+            <form class="rh-filters" method="get" action="{{ url_for('rh_dashboard') }}">
+                <label class="rh-field">
+                    <span>Data</span>
+                    <input type="date" name="data" value="{{ data }}" required>
+                </label>
+                <label class="rh-field">
+                    <span>Linha</span>
+                    <select name="linha">
+                        <option value="">Todas as linhas</option>
+                        {% for item in linhas %}
+                        <option value="{{ item }}" {% if item == linha_selecionada %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="rh-field">
+                    <span>Situação</span>
+                    <select name="status">
+                        <option value="todos" {% if status == 'todos' %}selected{% endif %}>Todos</option>
+                        <option value="confirmados" {% if status == 'confirmados' %}selected{% endif %}>Confirmada</option>
+                        <option value="pendentes" {% if status == 'pendentes' %}selected{% endif %}>Sem confirmação</option>
+                    </select>
+                </label>
+                <label class="rh-field rh-search">
+                    <span>Passageiro</span>
+                    <span class="rh-search-input">
+                        <i class='bx bx-search'></i>
+                        <input type="search" name="busca" value="{{ busca }}" placeholder="Nome, e-mail ou ponto">
+                    </span>
+                </label>
+                <button class="rh-filter-button" type="submit"><i class='bx bx-filter-alt'></i> Filtrar</button>
+                <a class="rh-reset-button" href="{{ url_for('rh_dashboard') }}">Limpar</a>
+            </form>
+
+            <section class="rh-table-card">
+                <div class="rh-table-heading">
+                    <div><h2>Passageiros</h2><p>{{ total }} resultado(s) para {{ data }}</p></div>
+                    <span class="rh-count">{{ confirmados }} confirmado(s)</span>
+                </div>
+                <div class="rh-table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Passageiro</th>
+                                <th>Linha</th>
+                                <th>Ponto de embarque</th>
+                                <th>Situação</th>
+                                <th>Horário</th>
+                                <th>Motorista</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for passageiro in passageiros %}
+                            <tr>
+                                <td>
+                                    <div class="rh-person">
+                                        <span class="rh-person-avatar">{{ passageiro.nome[:2].upper() }}</span>
+                                        <span><strong>{{ passageiro.nome }}</strong><small>{{ passageiro.email or 'E-mail não informado' }}</small></span>
+                                    </div>
+                                </td>
+                                <td>{{ passageiro.linha or '—' }}</td>
+                                <td>{{ passageiro.ponto or '—' }}</td>
+                                <td>
+                                    {% if passageiro.hora %}
+                                    <span class="rh-status confirmed"><i class='bx bx-check-circle'></i> Confirmada</span>
+                                    {% else %}
+                                    <span class="rh-status pending"><i class='bx bx-time-five'></i> Sem confirmação</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ passageiro.hora or '—' }}</td>
+                                <td>{{ passageiro.motorista or '—' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td class="rh-empty" colspan="6">Nenhum passageiro encontrado com esses filtros.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="rh-disclaimer">
+                    <i class='bx bx-info-circle'></i>
+                    “Sem confirmação” significa que não há registro de QR Code para o passageiro nesta data; isso não comprova uma falta.
+                </p>
+            </section>
+        </section>
+    </main>
+</div>
+</body>
+</html>

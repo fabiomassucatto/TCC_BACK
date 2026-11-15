@@ -135,6 +135,24 @@ necessário testar em um celular real, não só no navegador do PC.
 
 ---
 
+## Painel de acompanhamento do RH
+
+O perfil **RH** acessa `/rh` após entrar pelo seletor de perfil na tela de
+login. A página lista os passageiros e suas confirmações de presença pelo QR
+Code, com filtros por data, linha, situação e nome. “Sem confirmação” indica
+que não há registro para a data selecionada; não significa falta comprovada.
+
+Contas de RH não são criadas pelo cadastro público. Um operador com acesso ao
+banco deve cadastrar a conta na tabela `usuarios`, usando `tipo='rh'`. Exemplo
+para executar em uma ferramenta SQLite, substituindo nome, e-mail e senha:
+
+```sql
+INSERT INTO usuarios (nome, email, senha, ponto, linha, tipo)
+VALUES ('Equipe RH', 'rh@empresa.com', 'SUA_SENHA', '-', 'Linha 1', 'rh');
+```
+
+---
+
 ## Estrutura do projeto
 
 ```
@@ -144,14 +162,16 @@ TCC_BACK/
 ├── requirements.txt        # Dependências Python
 ├── static/
 │   ├── img.png
-│   └── styles.css
+│   ├── styles.css
+│   └── rh.css              # Estilos do painel de RH
 └── templates/
     ├── usuario.html         # Página inicial
     ├── login.html           # Login de usuário
     ├── cadastro.html         # Cadastro de usuário
     ├── motorista_login.html  # Login do motorista
     ├── exibir_qr.html        # Leitura do QR Code (câmera)
-    └── dashboard.html        # Painel com totais por ponto
+    ├── dashboard.html        # Painel do motorista
+    └── rh.html               # Acompanhamento de embarques pelo RH
 ```
 
 ---

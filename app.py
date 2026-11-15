@@ -18,6 +18,8 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
+
 def criar_tabelas():
     conn = get_db()
     conn.execute("""
@@ -36,6 +38,9 @@ def criar_tabelas():
     for col, tipo in [("lat_residencia","REAL"),("lng_residencia","REAL"),("linha","VARCHAR(50)")]:
         try: conn.execute(f"ALTER TABLE usuarios ADD COLUMN {col} {tipo}")
         except: pass
+
+    # Corrige usuarios antigos que ficaram sem linha
+    conn.execute("UPDATE usuarios SET linha='Linha 1' WHERE (linha IS NULL OR linha='') AND tipo='usuario'")
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS presencas (
@@ -100,6 +105,7 @@ def logout():
 @app.route("/login", methods=["GET","POST"])
 def login():
     erro = None
+    tipo_form = "usuario"
     if request.method == "POST":
         email     = request.form["email"]
         senha     = request.form["senha"]
@@ -116,10 +122,15 @@ def login():
                 session["user"]      = user["nome"]
                 session["user_id"]   = user["id"]
                 session["user_tipo"] = user["tipo"]
-                return redirect("/dashboard" if user["tipo"] == "motorista" else "/usuario")
+                if user["tipo"] == "motorista":
+                    return redirect("/dashboard")
+                if user["tipo"] == "rh":
+                    return redirect("/rh")
+                return redirect("/usuario")
         else:
             erro = "E-mail ou senha incorretos."
-    return render_template("login.html", erro=erro)
+    tipo_visual = tipo_form if tipo_form in ("usuario", "motorista", "rh") else "usuario"
+    return render_template("login.html", erro=erro, tipo=tipo_visual)
 
 # ── Cadastro ─────────────────────────────────────────────────────
 @app.route("/cadastro", methods=["GET","POST"])
@@ -173,6 +184,8 @@ def dashboard():
         FROM usuarios u
         WHERE u.tipo='usuario' AND u.lat_residencia IS NOT NULL
     """).fetchall()
+    
+    
 
     conn.close()
     pontos_unicos = len(set(p["ponto"] for p in presencas))
@@ -213,6 +226,80 @@ def usuario():
         info      =dict(info),
         historico =[dict(h) for h in historico],
         pontos_mapa=[dict(p) for p in pontos_mapa])
+
+# ── Painel de acompanhamento do RH ───────────────────────────────
+@app.route("/rh")
+def rh_dashboard():
+    if session.get("user_tipo") != "rh":
+        return redirect("/login")
+
+    data = request.args.get("data", datetime.now().strftime("%Y-%m-%d"))
+    try:
+        datetime.strptime(data, "%Y-%m-%d")
+    except ValueError:
+        return "Data inválida.", 400
+
+    status = request.args.get("status", "todos")
+    if status not in ("todos", "confirmados", "pendentes"):
+        return "Situação inválida.", 400
+
+    linha = request.args.get("linha", "")
+    busca = request.args.get("busca", "").strip()
+    conn = get_db()
+    linhas = [row["linha"] for row in conn.execute("""
+        SELECT DISTINCT linha FROM usuarios
+        WHERE tipo='usuario' AND linha IS NOT NULL AND linha != ''
+        ORDER BY linha COLLATE NOCASE
+    """).fetchall()]
+    if linha and linha not in linhas:
+        conn.close()
+        return "Linha inválida.", 400
+
+    filtros = ["u.tipo='usuario'"]
+    parametros = [data]
+    if linha:
+        filtros.append("u.linha=?")
+        parametros.append(linha)
+    if status == "confirmados":
+        filtros.append("p.id IS NOT NULL")
+    elif status == "pendentes":
+        filtros.append("p.id IS NULL")
+    if busca:
+        filtros.append("(u.nome LIKE ? OR u.email LIKE ? OR u.ponto LIKE ?)")
+        termo = f"%{busca}%"
+        parametros.extend([termo, termo, termo])
+
+    passageiros = conn.execute(f"""
+        SELECT u.nome, u.email, u.linha, u.ponto,
+               strftime('%H:%M', p.data_hora) AS hora,
+               m.nome AS motorista
+        FROM usuarios u
+        LEFT JOIN presencas p ON p.id=(
+            SELECT MAX(p2.id)
+            FROM presencas p2
+            WHERE p2.usuario_id=u.id AND date(p2.data_hora)=?
+        )
+        LEFT JOIN usuarios m ON m.id=p.motorista_id
+        WHERE {" AND ".join(filtros)}
+        ORDER BY CASE WHEN p.id IS NULL THEN 1 ELSE 0 END, u.nome COLLATE NOCASE
+    """, parametros).fetchall()
+    conn.close()
+
+    confirmados = sum(1 for passageiro in passageiros if passageiro["hora"])
+    total = len(passageiros)
+    return render_template(
+        "rh.html",
+        passageiros=[dict(passageiro) for passageiro in passageiros],
+        linhas=linhas,
+        data=data,
+        linha_selecionada=linha,
+        status=status,
+        busca=busca,
+        confirmados=confirmados,
+        pendentes=total - confirmados,
+        total=total,
+        percentual=round(confirmados * 100 / total) if total else 0,
+    )
 
 # ── QR Code dinâmico ────────────────────────────────────────────
 @app.route("/motorista/qr_atual")
@@ -336,6 +423,7 @@ def salvar_residencia():
     conn.commit()
     conn.close()
     return jsonify({"status":"ok","msg":"Ponto de coleta salvo com sucesso!"})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
